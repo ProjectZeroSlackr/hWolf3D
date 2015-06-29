@@ -7,6 +7,9 @@
 #include "foreign.h"
 
 extern int vwidth, vheight; /* size of screen */
+#ifdef IPOD
+extern int in_menu;
+#endif
 
 #define NOASM
 

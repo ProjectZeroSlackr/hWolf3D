@@ -278,6 +278,9 @@ void US_ControlPanel(byte scancode)
 	//
 	// MAIN MENU LOOP
 	//
+#ifdef IPOD
+	in_menu = 1;
+#endif
 	do
 	{
 		which=HandleMenu(&MainItems,&MainMenu[0],NULL);
@@ -334,6 +337,9 @@ void US_ControlPanel(byte scancode)
 				MenuFadeIn();
 				break;
 
+		#ifdef IPOD
+			case -1:
+		#endif
 			case backtodemo:
 				MM_SortMem();
 				StartGame=1;
@@ -342,7 +348,9 @@ void US_ControlPanel(byte scancode)
 				VL_FadeOut(0,255,0,0,0,10);
 				break;
 
+		#ifndef IPOD
 			case -1:
+		#endif
 			case quit:
 				CP_Quit();
 				break;
@@ -359,6 +367,9 @@ void US_ControlPanel(byte scancode)
 	// "EXIT OPTIONS" OR "NEW GAME" EXITS
 	//
 	} while(!StartGame);
+#ifdef IPOD
+	in_menu = 0;
+#endif
 
 	//
 	// DEALLOCATE EVERYTHING
@@ -2967,10 +2978,12 @@ void SetMenuTextColor(CP_itemtype *items,int hlight)
 ////////////////////////////////////////////////////////////////////
 void WaitKeyUp(void)
 {
+#ifndef IPOD
 	ControlInfo ci;
 	while(ReadAnyControl(&ci), 
 		ci.button0|ci.button1|ci.button2|ci.button3|
 		IN_KeyDown(sc_Space)|IN_KeyDown(sc_Enter)|IN_KeyDown(sc_Escape));
+#endif
 }
 
 
@@ -3002,6 +3015,9 @@ void ReadAnyControl(ControlInfo *ci)
 ////////////////////////////////////////////////////////////////////
 int Confirm(const char *string)
 {
+#ifdef IPOD
+	return 1; // No Y/N confirmation
+#else
 	int xit=0,x,y,tick=0,whichsnd[2]={ESCPRESSEDSND,SHOOTSND};
 
 	Message(string);
@@ -3049,6 +3065,7 @@ int Confirm(const char *string)
 	IN_ClearKeysDown();
 	SD_PlaySound(whichsnd[xit]);
 	return xit;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

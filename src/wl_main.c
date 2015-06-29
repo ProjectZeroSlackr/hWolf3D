@@ -218,7 +218,11 @@ int WriteConfig()
 
 static void SetDefaults()
 {
+#ifdef IPOD
+	viewsize = 20; // Full stretch
+#else
 	viewsize = 15;
+#endif
 	
 	mouseenabled = false;
 
@@ -342,6 +346,9 @@ configend:
 
 int SaveTheGame(const char *fn, const char *tag, int dx, int dy)
 {
+	// For some reason, game saving takes forever (i.e. almost 10 minutes) on the iPod
+	// No idea why this is so and no idea if the game save even works/is real
+	
 	objtype *ob;
 	int fd, i, x, y;
 	int32_t cs;
@@ -410,9 +417,12 @@ int SaveTheGame(const char *fn, const char *tag, int dx, int dy)
 	
 		DiskFlopAnim(dx, dy);
 	
-		for (x = 0; x < 64; x++)
-			for (y = 0; y < 64; y++)
+		for (x = 0; x < 64; x++){
+			for (y = 0; y < 64; y++) {
 				WriteInt32(fd, actorat[x][y]);
+				DiskFlopAnim(dx, dy);
+			}
+		}
 	
 		DiskFlopAnim(dx, dy);
 			
@@ -463,12 +473,14 @@ int SaveTheGame(const char *fn, const char *tag, int dx, int dy)
 			WriteInt32(fd, statobjlist[i].shapenum);
 			WriteInt8(fd,  statobjlist[i].flags);
 			WriteInt8(fd,  statobjlist[i].itemnumber);
+			DiskFlopAnim(dx, dy);
 		}
 	
 		DiskFlopAnim(dx, dy);
 	
 		for (i = 0; i < 64; i++) { /* MAXDOORS */
 			WriteInt32(fd, doorposition[i]);
+			DiskFlopAnim(dx, dy);
 		}
 	
 		DiskFlopAnim(dx, dy);
@@ -480,6 +492,7 @@ int SaveTheGame(const char *fn, const char *tag, int dx, int dy)
 			WriteInt8(fd,  doorobjlist[i].lock);
 			WriteInt8(fd,  doorobjlist[i].action);
 			WriteInt32(fd, doorobjlist[i].ticcount);
+			DiskFlopAnim(dx, dy);
 		}
 	
 		DiskFlopAnim(dx, dy);
@@ -656,9 +669,12 @@ int LoadTheGame(const char *fn, int dx, int dy)
 	
 	DiskFlopAnim(dx, dy);
 	
-	for (x = 0; x < 64; x++)
-		for (y = 0; y < 64; y++)
+	for (x = 0; x < 64; x++) {
+		for (y = 0; y < 64; y++) {
 			actorat[x][y] = ReadInt32(fd);
+			DiskFlopAnim(dx, dy);
+		}
+	}
 	
 	DiskFlopAnim(dx, dy);
 			
@@ -701,10 +717,13 @@ int LoadTheGame(const char *fn, int dx, int dy)
 	player->temp3		= ReadInt32(fd);
 	
 	/* update the id */
-	for (x = 0; x < 64; x++)
-		for (y = 0; y < 64; y++)
+	for (x = 0; x < 64; x++) {
+		for (y = 0; y < 64; y++) {
 			if (actorat[x][y] == (id | 0x8000))
 				actorat[x][y] = player->id | 0x8000;
+			DiskFlopAnim(dx, dy);
+		}
+	}
 
 	while (1) {
 		DiskFlopAnim(dx, dy);
@@ -739,10 +758,13 @@ int LoadTheGame(const char *fn, int dx, int dy)
 		new->temp2		= ReadInt32(fd);
 		new->temp3		= ReadInt32(fd);
 		
-		for (x = 0; x < 64; x++)
-			for (y = 0; y < 64; y++)
+		for (x = 0; x < 64; x++) {
+			for (y = 0; y < 64; y++) {
 				if (actorat[x][y] == (id | 0x8000))
 					actorat[x][y] = new->id | 0x8000;
+				DiskFlopAnim(dx, dy);
+			}
+		}
 	}
 	
 	DiskFlopAnim(dx, dy);
@@ -755,12 +777,14 @@ int LoadTheGame(const char *fn, int dx, int dy)
 		statobjlist[i].flags		= ReadInt8(fd);
 		statobjlist[i].itemnumber	= ReadInt8(fd);
 		statobjlist[i].visspot 		= &spotvis[statobjlist[i].tilex][statobjlist[i].tiley];
+		DiskFlopAnim(dx, dy);
 	}
 	
 	DiskFlopAnim(dx, dy);
 	
 	for (i = 0; i < 64; i++) { /* MAXDOORS */
 		doorposition[i] 		= ReadInt32(fd);
+		DiskFlopAnim(dx, dy);
 	}
 	
 	DiskFlopAnim(dx, dy);
@@ -772,6 +796,7 @@ int LoadTheGame(const char *fn, int dx, int dy)
 		doorobjlist[i].lock	= ReadInt8(fd);
 		doorobjlist[i].action	= ReadInt8(fd);
 		doorobjlist[i].ticcount	= ReadInt32(fd);
+		DiskFlopAnim(dx, dy);
 	}
 	
 	DiskFlopAnim(dx, dy);
@@ -1367,6 +1392,9 @@ int WolfMain(int argc, char *argv[])
 	}
 		
 	printf("Now Loading %s\n", GAMENAME);
+#ifdef IPOD
+	printf("iPodLinux port by Keripo, Version K1\n");
+#endif
 		
 	CheckForEpisodes();
 
